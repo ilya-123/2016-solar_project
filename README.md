@@ -1,2 +1,1 @@
-# solar_project
-Модель Солнечной системы на языке Python
+﻿# solar_projectМодель Солнечной системы на языке Python
