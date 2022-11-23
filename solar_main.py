@@ -1,6 +1,7 @@
 # coding: utf-8
 # license: GPLv3
 
+import matplotlib.pyplot as plt
 import tkinter
 from tkinter.filedialog import *
 from solar_vis import *
@@ -34,14 +35,45 @@ def execution():
     """
     global physical_time
     global displayed_time
+    global time
+
     recalculate_space_objects_positions(space_objects, time_step.get())
     for body in space_objects:
         update_object_position(space, body)
     physical_time += time_step.get()
     displayed_time.set("%.1f" % physical_time + " seconds gone")
 
+    ''' Записывает время, скорости и расстояния '''
+    time.append(physical_time)
+    for body in space_objects:
+        if body.type == "star":
+            for obj in space_objects:
+                if obj.type == "planet":
+                    module_v = (obj.Vx ** 2 + obj.Vy ** 2) ** 0.5
+                    obj.v.append(module_v)
+                    r = ((body.x - obj.x) ** 2 + (body.y - obj.y) ** 2) ** 0.5
+                    obj.dist.append(r)
+                    obj.time_p.append(physical_time)
+
     if perform_execution:
         space.after(101 - int(time_speed.get()), execution)
+
+
+def graphs_draw():
+    ''' Рисует графики. Вызывается при нажатии на кнопку Show graphs '''
+    for obj in space_objects:
+        if obj.type == "planet":
+            plt.subplot(2, 2, 1)
+            plt.plot(obj.time_p, obj.v)
+            plt.title("Скорость от времени")
+            plt.subplot(2, 2, 3)
+            plt.plot(obj.time_p, obj.dist)
+            plt.title("Расстояние от времени")
+            plt.subplot(1, 2, 2)
+            plt.plot(obj.dist, obj.v)
+            plt.title("Скорость от расстояния")
+
+            plt.show()
 
 
 def start_execution():
@@ -97,8 +129,10 @@ def save_file_dialog():
     функцию считывания параметров системы небесных тел из данного файла.
     Считанные объекты сохраняются в глобальный список space_objects
     """
+    global time
+
     out_filename = asksaveasfilename(filetypes=(("Text file", ".txt"),))
-    write_space_objects_data_to_file(out_filename, space_objects)
+    write_space_objects_data_to_file(out_filename, space_objects, time)
 
 
 def main():
@@ -111,9 +145,11 @@ def main():
     global time_speed
     global space
     global start_button
+    global time
 
     print('Modelling started!')
     physical_time = 0
+    time = []
 
     root = tkinter.Tk()
     # космическое пространство отображается на холсте типа Canvas
@@ -139,6 +175,8 @@ def main():
     load_file_button.pack(side=tkinter.LEFT)
     save_file_button = tkinter.Button(frame, text="Save to file...", command=save_file_dialog)
     save_file_button.pack(side=tkinter.LEFT)
+    graf_button = tkinter.Button(frame, text="Show graphs", command=graphs_draw, width=6)
+    graf_button.pack(side=tkinter.LEFT)
 
     displayed_time = tkinter.StringVar()
     displayed_time.set(str(physical_time) + " seconds gone")
@@ -147,6 +185,7 @@ def main():
 
     root.mainloop()
     print('Modelling finished!')
+
 
 if __name__ == "__main__":
     main()

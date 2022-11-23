@@ -57,6 +57,7 @@ def parse_star_parameters(line, star):
     star.Vx = float(lines[6])
     star.Vy = float(lines[7])
 
+
 def parse_planet_parameters(line, planet):
     """Считывает данные о планете из строки.
     Предполагается такая строка:
@@ -83,7 +84,7 @@ def parse_planet_parameters(line, planet):
     planet.Vy = float(lines[7])
 
 
-def write_space_objects_data_to_file(output_filename, space_objects):
+def write_space_objects_data_to_file(output_filename, space_objects, time):
     """Сохраняет данные о космических объектах в файл.
     Строки должны иметь следующий формат:
     Star <радиус в пикселах> <цвет> <масса> <x> <y> <Vx> <Vy>
@@ -94,14 +95,22 @@ def write_space_objects_data_to_file(output_filename, space_objects):
     **output_filename** — имя входного файла
     **space_objects** — список объектов планет и звёзд
     """
-    with open(output_filename, 'w') as out_file:
-        for obj in space_objects:
-            print(out_file,
-                  "%s %d %s %f %f %f %f %f" % (obj.type, obj.R, obj.color, obj.m, obj.x, obj.y, obj.Vx, obj.Vy))
-            #print(out_file, "%s %d %s %f" % ('1', 2, '3', 4.5))
-            # FIXME: should store real values
 
-# FIXME: хорошо бы ещё сделать функцию, сохранающую статистику в заданный файл...
+    with open('stats.txt', 'w') as out_file:
+        for i in range(len(time)):
+            t = 'time: ' + str(time[i]) + '\n'
+            for obj in space_objects:
+                if obj.type == "planet":
+                    t += str(obj.v[i]) + ' ' + str(obj.dist[i]) + '\n'
+            out_file.write(t)
+
+    with open(output_filename, 'a') as out_file:
+        for obj in space_objects:
+            x = [obj.type.title(), obj.R, obj.color, obj.m, obj.x, obj.y, obj.Vx, obj.Vy]
+            s = ' '.join(map(str, x)) + '\n'
+            out_file.write(s)
+        out_file.write('\n')
+
 
 if __name__ == "__main__":
     print("This module is not for direct call!")
